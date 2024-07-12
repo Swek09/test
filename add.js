@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Send taskData to server via POST request
-        fetch('http://localhost:3000/saveTask', {
+        fetch('https://test.api.yadro.space/saveTask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

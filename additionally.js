@@ -1,4 +1,4 @@
-fetch('http://localhost:3000/getTasks')
+fetch('https://test.api.yadro.space/getTasks')
     .then(response => response.json())
     .then(tasks => {
         const tasksContainer = document.querySelector('.tasks-container');
@@ -62,7 +62,7 @@ fetch('http://localhost:3000/getTasks')
     });
 
 function incrementLike(taskId) {
-    fetch('http://localhost:3000/likeTask', {
+    fetch('https://test.api.yadro.space/likeTask', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ function incrementLike(taskId) {
 }
 
 function incrementDislike(taskId) {
-    fetch('http://localhost:3000/dislikeTask', {
+    fetch('https://test.api.yadro.space/dislikeTask', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

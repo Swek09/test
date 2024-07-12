@@ -5,26 +5,29 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 3000;
 
-// Парсим данные POST запросов
+let nextTaskId = 1; // Initialize the next task ID
+
+// Middleware to parse JSON and handle CORS
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*'); // Разрешает доступ всем доменам
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
 
-// POST запрос на сохранение данных
+// POST request to save a new task
 app.post('/saveTask', (req, res) => {
     const newTask = req.body.task;
 
-    // Set initial likes and dislikes to 0
-    newTask.likes = 0;
-    newTask.dislikes = 0;
+    // Assign a unique ID to the new task
+    newTask.id = nextTaskId++;
+    newTask.likes = 0; // Initialize likes
+    newTask.dislikes = 0; // Initialize dislikes
 
-    // Read current tasks from data.json
+    // Read existing tasks from data.json
     fs.readFile('data.json', 'utf8', (err, data) => {
-        if (err && err.code !== 'ENOENT') { // Handle errors other than file not found
+        if (err && err.code !== 'ENOENT') {
             console.error(err);
             res.status(500).send('Error reading data');
             return;
@@ -44,7 +47,7 @@ app.post('/saveTask', (req, res) => {
         // Add new task to current tasks array
         currentTasks.push(newTask);
 
-        // Write updated tasks to data.json
+        // Write updated tasks back to data.json
         fs.writeFile('data.json', JSON.stringify(currentTasks, null, 2), (writeErr) => {
             if (writeErr) {
                 console.error(writeErr);
@@ -52,13 +55,14 @@ app.post('/saveTask', (req, res) => {
                 return;
             }
             console.log('Task saved successfully');
-            res.status(200).send('Task added successfully');
+            res.status(200).json(newTask); // Return newly added task object with ID
         });
     });
 });
 
+// Increment likes for a specific task
 app.post('/likeTask', (req, res) => {
-    const taskId = req.body.taskId; // Assuming taskId is sent from client-side
+    const taskId = req.body.taskId;
 
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
@@ -95,7 +99,7 @@ app.post('/likeTask', (req, res) => {
 
 // Increment dislikes for a specific task
 app.post('/dislikeTask', (req, res) => {
-    const taskId = req.body.taskId; // Assuming taskId is sent from client-side
+    const taskId = req.body.taskId;
 
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
@@ -130,7 +134,7 @@ app.post('/dislikeTask', (req, res) => {
     });
 });
 
-// GET запрос для получения всего JSON из файла data.json
+// GET request to fetch all tasks
 app.get('/getTasks', (req, res) => {
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
@@ -148,6 +152,8 @@ app.get('/getTasks', (req, res) => {
     });
 });
 
+// Start the server
 app.listen(port, () => {
     console.log(`Сервер запущен на http://localhost:${port}`);
 });
+
