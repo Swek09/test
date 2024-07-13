@@ -30,6 +30,8 @@ body, html {
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid black;
+    border-radius: 8px; 
 }
 
 .task-image {
@@ -176,6 +178,7 @@ body, html {
   
   #answerForm button {
     padding: 10px 20px;
+    margin-bottom: 60px;
     background-color: #4CAF50;
     color: white;
     border: none;
@@ -187,3 +190,46 @@ body, html {
     background-color: #45a049;
   }
   
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tasks-container {
+    background-color: aliceblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px; /* You can adjust this as needed */
+    flex: 1;
+    padding-bottom: 80px; /* Adjust this value to accommodate bottom-nav height */
+}
+
+/* Styles for the bottom navigation bar */
+.bottom-nav {
+    width: 100%;
+    background-color: #333;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    color: white;
+    text-align: center;
+    font-size: 16px;
+}
+
+.bottom-nav a {
+    text-decoration: none;
+    padding: 10px 20px;
+    color: white;
+}
+
+.bottom-nav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+

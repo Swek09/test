@@ -1,4 +1,4 @@
-const serverUrl = 'http://localhost:3000';
+const serverUrl = 'https://test.api.yadro.space';
 
 fetch(`${serverUrl}/getTasks`)
     .then(response => response.json())
