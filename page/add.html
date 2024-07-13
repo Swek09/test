@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Добавить Задачу - To-Do List App</title>
-  <link rel="stylesheet" href="add.css">
+  <link rel="stylesheet" href="../styles/add.css">
 </head>
 <body>
     <div class="form-container">
@@ -16,23 +16,22 @@
             <label for="task-desc">Описание задачи:</label>
             <textarea id="task-desc" name="task-desc" required></textarea>
 
-            <label for="task-image">Ссылка на изображение:</label>
-            <input type="url" id="task-image" name="task-image" required>
+            <label for="task-image">Изображение задачи:</label>
+            <input type="file" id="task-image" name="task-image" accept="image/*" required>
 
             <label for="urgent-task">Не срочная задача:</label>
             <input type="checkbox" id="urgent-task" name="urgent-task">
-
 
             <button type="submit">Добавить</button>
         </form>
     </div>
     
     <nav class="bottom-nav">
-        <a href="./index.html">Задачи</a>
+        <a href="../index.html">Задачи</a>
         <a href="./additionally.html">Дополнительно</a>
         <a href="./add.html">Добавить</a>
     </nav>
 
-<script src="./add.js"></script>
+<script src="../scripts/add.js"></script>
 </body>
 </html>

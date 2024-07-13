@@ -1,47 +1,20 @@
 [
   {
-    "title": "123123",
-    "description": "32423432",
-    "imageUrl": "https://www.actuailes.fr/kcfinder/upload/images/road-1072823_640.jpg",
+    "id": 6,
+    "title": "Сделать принципиальную электрическую схему архитектурной подсветки.",
+    "description": "Имеется архитектурная светодинамическая подсветка на аттракционе к которой есть чертежи расположения блоков питания и схемы их соединения. Необходимо сделать принципиальную электрическую схему.",
+    "imageUrl": "/uploads/1720834412535-vu2m0k1diz2rfzslijkauips8u0.png",
     "urgent": false,
-    "likes": 11,
-    "dislikes": 7,
-    "id": 1
+    "likes": 1,
+    "dislikes": 0
   },
   {
-    "title": "42342",
-    "description": "234234",
-    "imageUrl": "https://www.actuailes.fr/kcfinder/upload/images/road-1072823_640.jpg",
-    "urgent": true,
-    "likes": 6,
-    "dislikes": 4,
-    "id": 2
-  },
-  {
-    "title": "Талвлсьссь",
-    "description": "Стчьвлатстчлвл",
-    "imageUrl": "https://google.com",
+    "id": 7,
+    "title": "Машинное обучения для распознавания элементов в тексте.",
+    "description": "У нас есть заявки которые поступают к нам в произвольной письменной форме. Наша задача в том, чтобы используя машинное обучение, выделить важные элементы каждой заявки. У нас есть 8 элементов которые мы хотим видеть. Иногда есть все 8, иногда только 3-4, но задача нашей модели в том, чтобы сканировать каждую заявку и выделять все возможные элементы которые есть. ",
+    "imageUrl": "/uploads/1720835271794-ef59cff62fce5473ea1a155affcfc517.png",
     "urgent": true,
     "likes": 0,
-    "dislikes": 0,
-    "id": 1
-  },
-  {
-    "title": "Жтсзосз",
-    "description": "Жозосзчочзг",
-    "imageUrl": "https://google.com",
-    "urgent": false,
-    "likes": 0,
-    "dislikes": 0,
-    "id": 2
-  },
-  {
-    "title": "Тест задача",
-    "description": "Текст описание",
-    "imageUrl": "https://cdn-edge.kwork.ru/files/portfolio/t1/60/cover-13225811-1718795149.jpg",
-    "urgent": false,
-    "likes": 0,
-    "dislikes": 0,
-    "id": 3
+    "dislikes": 0
   }
 ]

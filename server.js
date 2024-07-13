@@ -1,11 +1,11 @@
 const express = require('express');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 const port = 3000;
-
-let nextTaskId = 1; // Initialize the next task ID
 
 // Middleware to parse JSON and handle CORS
 app.use(bodyParser.json());
@@ -16,14 +16,47 @@ app.use((req, res, next) => {
     next();
 });
 
-// POST request to save a new task
-app.post('/saveTask', (req, res) => {
-    const newTask = req.body.task;
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    }
+});
 
-    // Assign a unique ID to the new task
-    newTask.id = nextTaskId++;
-    newTask.likes = 0; // Initialize likes
-    newTask.dislikes = 0; // Initialize dislikes
+const upload = multer({ storage });
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
+
+// Initialize nextTaskId from data.json if it exists
+let nextTaskId = 1;
+fs.readFile('data.json', 'utf8', (err, data) => {
+    if (!err) {
+        try {
+            const tasks = JSON.parse(data);
+            nextTaskId = tasks.length ? tasks[tasks.length - 1].id + 1 : 1;
+        } catch (parseError) {
+            console.error('Error parsing data for task ID initialization:', parseError);
+        }
+    }
+});
+
+// POST request to save a new task
+app.post('/saveTask', upload.single('task-image'), (req, res) => {
+    const newTask = {
+        id: nextTaskId++,
+        title: req.body['task-title'],
+        description: req.body['task-desc'],
+        imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
+        urgent: req.body['urgent-task'] === 'on',
+        likes: 0,
+        dislikes: 0
+    };
 
     // Read existing tasks from data.json
     fs.readFile('data.json', 'utf8', (err, data) => {
@@ -44,7 +77,6 @@ app.post('/saveTask', (req, res) => {
             }
         }
 
-        // Add new task to current tasks array
         currentTasks.push(newTask);
 
         // Write updated tasks back to data.json
@@ -67,7 +99,7 @@ app.post('/likeTask', (req, res) => {
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
             console.error(err);
-            res.status(500).send('Ошибка чтения данных');
+            res.status(500).send('Error reading data');
             return;
         }
         try {
@@ -75,7 +107,7 @@ app.post('/likeTask', (req, res) => {
             const task = tasks.find(t => t.id === taskId);
 
             if (!task) {
-                res.status(404).send('Задача не найдена');
+                res.status(404).send('Task not found');
                 return;
             }
 
@@ -84,15 +116,15 @@ app.post('/likeTask', (req, res) => {
             fs.writeFile('data.json', JSON.stringify(tasks, null, 2), (writeErr) => {
                 if (writeErr) {
                     console.error(writeErr);
-                    res.status(500).send('Ошибка сохранения данных');
+                    res.status(500).send('Error saving data');
                     return;
                 }
-                console.log(`Увеличено число лайков для задачи с ID ${taskId}`);
+                console.log(`Likes incremented for task with ID ${taskId}`);
                 res.status(200).json(task); // Return updated task object
             });
         } catch (parseError) {
             console.error(parseError);
-            res.status(500).send('Ошибка парсинга данных');
+            res.status(500).send('Error parsing data');
         }
     });
 });
@@ -104,7 +136,7 @@ app.post('/dislikeTask', (req, res) => {
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
             console.error(err);
-            res.status(500).send('Ошибка чтения данных');
+            res.status(500).send('Error reading data');
             return;
         }
         try {
@@ -112,7 +144,7 @@ app.post('/dislikeTask', (req, res) => {
             const task = tasks.find(t => t.id === taskId);
 
             if (!task) {
-                res.status(404).send('Задача не найдена');
+                res.status(404).send('Task not found');
                 return;
             }
 
@@ -121,15 +153,15 @@ app.post('/dislikeTask', (req, res) => {
             fs.writeFile('data.json', JSON.stringify(tasks, null, 2), (writeErr) => {
                 if (writeErr) {
                     console.error(writeErr);
-                    res.status(500).send('Ошибка сохранения данных');
+                    res.status(500).send('Error saving data');
                     return;
                 }
-                console.log(`Увеличено число дизлайков для задачи с ID ${taskId}`);
+                console.log(`Dislikes incremented for task with ID ${taskId}`);
                 res.status(200).json(task); // Return updated task object
             });
         } catch (parseError) {
             console.error(parseError);
-            res.status(500).send('Ошибка парсинга данных');
+            res.status(500).send('Error parsing data');
         }
     });
 });
@@ -139,7 +171,7 @@ app.get('/getTasks', (req, res) => {
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
             console.error(err);
-            res.status(500).send('Ошибка чтения данных');
+            res.status(500).send('Error reading data');
             return;
         }
         try {
@@ -147,13 +179,90 @@ app.get('/getTasks', (req, res) => {
             res.status(200).json(tasks);
         } catch (parseError) {
             console.error(parseError);
-            res.status(500).send('Ошибка парсинга данных');
+            res.status(500).send('Error parsing data');
         }
     });
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Сервер запущен на http://localhost:${port}`);
+app.get('/getTaskById', (req, res) => {
+    const taskId = parseInt(req.query.id); // Assuming id is passed as query parameter
+
+    fs.readFile('data.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error reading data');
+            return;
+        }
+        try {
+            const tasks = JSON.parse(data);
+            const task = tasks.find(t => t.id === taskId);
+
+            if (!task) {
+                res.status(404).send('Task not found');
+                return;
+            }
+
+            res.status(200).json(task);
+        } catch (parseError) {
+            console.error(parseError);
+            res.status(500).send('Error parsing data');
+        }
+    });
 });
 
+// POST request to add an answer to a task
+app.post('/addAnswer', (req, res) => {
+    const { taskId, name, answer } = req.body;
+
+    if (!taskId || !name || !answer) {
+        return res.status(400).send('Invalid request parameters.');
+    }
+
+    fs.readFile('data.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading data.json:', err);
+            return res.status(500).send('Error reading data');
+        }
+
+        try {
+            const tasks = JSON.parse(data);
+            const taskIndex = tasks.findIndex(t => t.id === parseInt(taskId));
+
+            if (taskIndex === -1) {
+                return res.status(404).send('Task not found');
+            }
+
+            if (!tasks[taskIndex].answers) {
+                tasks[taskIndex].answers = [];
+            }
+
+            tasks[taskIndex].answers.push({
+                name: name,
+                answer: answer,
+                timestamp: new Date().toISOString()
+            });
+
+            fs.writeFile('data.json', JSON.stringify(tasks, null, 2), (writeErr) => {
+                if (writeErr) {
+                    console.error('Error writing data.json:', writeErr);
+                    return res.status(500).send('Error saving data');
+                }
+                console.log('Answer added successfully');
+                res.status(200).json(tasks[taskIndex]); // Return updated task object
+            });
+        } catch (parseError) {
+            console.error('Error parsing data.json:', parseError);
+            res.status(500).send('Error parsing data');
+        }
+    });
+});
+
+
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});

@@ -1,12 +1,22 @@
-fetch('https://test.api.yadro.space/getTasks')
+const serverUrl = 'http://localhost:3000';
+
+fetch(`${serverUrl}/getTasks`)
     .then(response => response.json())
     .then(tasks => {
         const tasksContainer = document.querySelector('.tasks-container');
 
-        tasks.forEach(task => {
+        // Фильтрация задач: показываем только не срочные (urgent !== true)
+        const nonUrgentTasks = tasks.filter(task => !task.urgent);
+
+        nonUrgentTasks.forEach(task => {
             const taskDiv = document.createElement('div');
             taskDiv.classList.add('task');
             taskDiv.setAttribute('id', `task-${task.id}`); // Assuming each task has an ID
+
+            // Добавляем обработчик клика для перехода на task.html с передачей id задачи
+            taskDiv.addEventListener('click', () => {
+                window.location.href = `../page/task.html?id=${task.id}`;
+            });
 
             const taskImage = document.createElement('img');
             taskImage.src = task.imageUrl;
@@ -30,7 +40,8 @@ fetch('https://test.api.yadro.space/getTasks')
                 <span class="like-count">${task.likes}</span>
             `;
 
-            likeButton.addEventListener('click', () => {
+            likeButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Останавливаем распространение события, чтобы клик не срабатывал на taskDiv
                 incrementLike(task.id); // Function to increment likes (defined below)
             });
 
@@ -41,7 +52,8 @@ fetch('https://test.api.yadro.space/getTasks')
                 <span class="dislike-count">${task.dislikes}</span>
             `;
 
-            dislikeButton.addEventListener('click', () => {
+            dislikeButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Останавливаем распространение события, чтобы клик не срабатывал на taskDiv
                 incrementDislike(task.id); // Function to increment dislikes (defined below)
             });
 
@@ -62,12 +74,12 @@ fetch('https://test.api.yadro.space/getTasks')
     });
 
 function incrementLike(taskId) {
-    fetch('https://test.api.yadro.space/likeTask', {
+    fetch(`${serverUrl}/likeTask`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ taskId }),
+        body: JSON.stringify({ taskId }), // Send taskId in the body
     })
     .then(response => response.json())
     .then(updatedTask => {
@@ -80,12 +92,12 @@ function incrementLike(taskId) {
 }
 
 function incrementDislike(taskId) {
-    fetch('https://test.api.yadro.space/dislikeTask', {
+    fetch(`${serverUrl}/dislikeTask`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ taskId }),
+        body: JSON.stringify({ taskId }), // Send taskId in the body
     })
     .then(response => response.json())
     .then(updatedTask => {
