@@ -15,9 +15,9 @@ body, html {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* You can adjust this as needed */
+    max-width: 600px;
     flex: 1;
-    margin-top: 60px; /* Add margin to account for the fixed bottom navigation */
+    margin-top: 60px;
 }
 
 .task {
@@ -79,7 +79,7 @@ body, html {
     margin-left: 5px;
 }
 
-/* Styles for the bottom navigation bar */
+
 .bottom-nav {
     width: 100%;
     background-color: #333;
@@ -122,12 +122,12 @@ body, html {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* You can adjust this as needed */
+    max-width: 600px;
     flex: 1;
-    padding-bottom: 80px; /* Adjust this value to accommodate bottom-nav height */
+    padding-bottom: 80px;
 }
 
-/* Styles for the bottom navigation bar */
+
 .bottom-nav {
     width: 100%;
     background-color: #333;
@@ -158,9 +158,7 @@ body, html {
     padding: 20px;
   }
   
-  #answerForm {
-    max-width: 400px; /* Ширина формы ответа */
-  }
+ 
   
   #answerForm input[type="text"],
   #answerForm textarea {
@@ -173,7 +171,7 @@ body, html {
   }
   
   #answerForm textarea {
-    height: 100px; /* Высота текстового поля */
+    height: 100px;
   }
   
   #answerForm button {
@@ -204,12 +202,12 @@ body, html {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* You can adjust this as needed */
+    max-width: 600px;
     flex: 1;
-    padding-bottom: 80px; /* Adjust this value to accommodate bottom-nav height */
+    padding-bottom: 80px;
 }
 
-/* Styles for the bottom navigation bar */
+
 .bottom-nav {
     width: 100%;
     background-color: #333;
@@ -233,3 +231,6 @@ body, html {
     color: black;
 }
 
+.anon-send {
+    padding-bottom: 10px;
+}

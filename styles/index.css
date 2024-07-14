@@ -14,7 +14,7 @@ body, html {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* You can adjust this as needed */
+    max-width: 600px;
     flex: 1;
 }
 
@@ -71,7 +71,7 @@ body, html {
     margin-left: 5px;
 }
 
-/* Styles for the bottom navigation bar */
+
 .bottom-nav {
     width: 100%;
     background-color: #333;
@@ -110,12 +110,12 @@ body, html {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* You can adjust this as needed */
+    max-width: 600px;
     flex: 1;
-    padding-bottom: 80px; /* Adjust this value to accommodate bottom-nav height */
+    padding-bottom: 80px;
 }
 
-/* Styles for the bottom navigation bar */
+
 .bottom-nav {
     width: 100%;
     background-color: #333;

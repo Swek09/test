@@ -6,7 +6,15 @@
     "imageUrl": "/uploads/1720834412535-vu2m0k1diz2rfzslijkauips8u0.png",
     "urgent": false,
     "likes": 38,
-    "dislikes": 4
+    "dislikes": 4,
+    "answers": [
+      {
+        "name": "Анонимно",
+        "answer": "123",
+        "timestamp": "2024-07-13T21:26:55.236Z"
+      }
+    ],
+    "status": "done"
   },
   {
     "id": 7,
@@ -22,7 +30,8 @@
         "answer": "Интересно",
         "timestamp": "2024-07-13T17:07:04.279Z"
       }
-    ]
+    ],
+    "status": "done"
   },
   {
     "id": 8,
@@ -30,7 +39,7 @@
     "description": "Задача написать скрипт парсер Сообществ ГРУПП Телеграма с Веб-Разрабами",
     "imageUrl": "/uploads/1720890566268-IMG_20240711_233637_694.jpg",
     "urgent": false,
-    "likes": 33,
+    "likes": 34,
     "dislikes": 0,
     "answers": [
       {
@@ -38,6 +47,7 @@
         "answer": "Интересная реализация!",
         "timestamp": "2024-07-13T17:10:13.818Z"
       }
-    ]
+    ],
+    "status": "inactive"
   }
 ]

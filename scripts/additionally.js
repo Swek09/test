@@ -1,14 +1,16 @@
-const serverUrl = 'https://test.api.yadro.space';
+const serverUrl = 'http://localhost:3000';
 
 fetch(`${serverUrl}/getTasks`)
     .then(response => response.json())
     .then(tasks => {
         const tasksContainer = document.querySelector('.tasks-container');
 
-        tasks.forEach(task => {
+        const activeTasks = tasks.filter(task => task.status !== 'inactive');
+
+        activeTasks.forEach(task => {
             const taskDiv = document.createElement('div');
             taskDiv.classList.add('task');
-            taskDiv.setAttribute('id', `task-${task.id}`); // Assuming each task has an ID
+            taskDiv.setAttribute('id', `task-${task.id}`);
 
             const taskImage = document.createElement('img');
             taskImage.src = task.imageUrl;
@@ -33,7 +35,7 @@ fetch(`${serverUrl}/getTasks`)
             `;
 
             likeButton.addEventListener('click', () => {
-                incrementLike(task.id); // Function to increment likes (defined below)
+                incrementLike(task.id); 
             });
 
             const dislikeButton = document.createElement('button');
@@ -44,10 +46,9 @@ fetch(`${serverUrl}/getTasks`)
             `;
 
             dislikeButton.addEventListener('click', () => {
-                incrementDislike(task.id); // Function to increment dislikes (defined below)
+                incrementDislike(task.id); 
             });
 
-            // Add click event listener to navigate to task.html with task ID
             taskDiv.addEventListener('click', () => {
                 window.location.href = `./task.html?id=${task.id}`;
             });

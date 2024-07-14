@@ -1,4 +1,4 @@
-/* Reset and basic styles */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -73,7 +73,7 @@
     background-color: #555;
   }
   
-  /* Bottom navigation */
+ 
   .bottom-nav {
     width: 100%;
     background-color: #333;
@@ -104,9 +104,9 @@
     cursor: pointer;
   }
   
-  /* Изменить стили для отмеченного (checked) состояния */
+ 
   input[type="checkbox"]:checked::before {
-    content: '\2714'; /* Unicode символ "✓" */
+    content: '\2714';
     display: inline-block;
     font-size: 20px;
     line-height: 20px;
@@ -131,12 +131,12 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* You can adjust this as needed */
+    max-width: 600px;
     flex: 1;
-    padding-bottom: 80px; /* Adjust this value to accommodate bottom-nav height */
+    padding-bottom: 80px;
 }
 
-/* Styles for the bottom navigation bar */
+
 .bottom-nav {
     width: 100%;
     background-color: #333;

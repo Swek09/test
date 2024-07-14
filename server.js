@@ -7,7 +7,6 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// Middleware to parse JSON and handle CORS
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
@@ -16,7 +15,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Set up multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -28,12 +26,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Create uploads directory if it doesn't exist
 if (!fs.existsSync('uploads')) {
     fs.mkdirSync('uploads');
 }
 
-// Initialize nextTaskId from data.json if it exists
 let nextTaskId = 1;
 fs.readFile('data.json', 'utf8', (err, data) => {
     if (!err) {
@@ -46,7 +42,10 @@ fs.readFile('data.json', 'utf8', (err, data) => {
     }
 });
 
-// POST request to save a new task
+const request = require('request');
+const TELEGRAM_BOT_TOKEN = '7416061984:AAF3wMHZ3D01EIDM2WWjUEvjnR5DDrdL90U';
+const TELEGRAM_CHAT_ID = '1488037388';
+
 app.post('/saveTask', upload.single('task-image'), (req, res) => {
     const newTask = {
         id: nextTaskId++,
@@ -55,44 +54,88 @@ app.post('/saveTask', upload.single('task-image'), (req, res) => {
         imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
         urgent: req.body['urgent-task'] === 'on',
         likes: 0,
-        dislikes: 0
+        dislikes: 0,
+        status: 'inactive' 
     };
 
-    // Read existing tasks from data.json
-    fs.readFile('data.json', 'utf8', (err, data) => {
-        if (err && err.code !== 'ENOENT') {
-            console.error(err);
-            res.status(500).send('Error reading data');
-            return;
-        }
+    const message = `New Task Added:\nID: ${newTask.id}\nTitle: ${newTask.title}\nDescription: ${newTask.description}`;
+    sendTelegramMessage(message, req.file)
+        .then(() => {
+            fs.readFile('data.json', 'utf8', (err, data) => {
+                if (err && err.code !== 'ENOENT') {
+                    console.error(err);
+                    res.status(500).send('Error reading data');
+                    return;
+                }
 
-        let currentTasks = [];
-        if (!err) {
-            try {
-                currentTasks = JSON.parse(data);
-            } catch (parseError) {
-                console.error(parseError);
-                res.status(500).send('Error parsing data');
-                return;
-            }
-        }
+                let currentTasks = [];
+                if (!err) {
+                    try {
+                        currentTasks = JSON.parse(data);
+                    } catch (parseError) {
+                        console.error(parseError);
+                        res.status(500).send('Error parsing data');
+                        return;
+                    }
+                }
 
-        currentTasks.push(newTask);
+                currentTasks.push(newTask);
 
-        // Write updated tasks back to data.json
-        fs.writeFile('data.json', JSON.stringify(currentTasks, null, 2), (writeErr) => {
-            if (writeErr) {
-                console.error(writeErr);
-                res.status(500).send('Error saving data');
-                return;
-            }
-            console.log('Task saved successfully');
-            res.status(200).json(newTask); // Return newly added task object with ID
+                fs.writeFile('data.json', JSON.stringify(currentTasks, null, 2), (writeErr) => {
+                    if (writeErr) {
+                        console.error(writeErr);
+                        res.status(500).send('Error saving data');
+                        return;
+                    }
+                    console.log('Task saved successfully');
+                    res.status(200).json(newTask); 
+                });
+            });
+        })
+        .catch((error) => {
+            console.error('Error sending Telegram message:', error);
+            res.status(500).send('Error sending Telegram notification');
         });
-    });
 });
 
-// Increment likes for a specific task
+
+function sendTelegramMessage(message, file) {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+
+    const formData = {
+        chat_id: TELEGRAM_CHAT_ID,
+        caption: message,
+        photo: {
+            value: fs.createReadStream(file.path),
+            options: {
+                filename: file.originalname,
+                contentType: file.mimetype
+            }
+        },
+        reply_markup: JSON.stringify({
+            inline_keyboard: [
+                [{ text: 'Подтвердить', callback_data: 'confirm' }],
+                [{ text: 'Отклонить', callback_data: 'reject' }]
+            ]
+        })
+    };
+
+    return new Promise((resolve, reject) => {
+        request.post({ url: url, formData: formData }, (err, response, body) => {
+            if (err) {
+                console.error('Error sending photo to Telegram:', err);
+                reject(err);
+            } else if (response.statusCode !== 200) {
+                console.error('Telegram API error:', body);
+                reject(new Error(`Telegram API error: ${body.description}`));
+            } else {
+                console.log('Photo sent to Telegram successfully');
+                resolve();
+            }
+        });
+    });
+}
+
 app.post('/likeTask', (req, res) => {
     const taskId = req.body.taskId;
 
@@ -120,7 +163,7 @@ app.post('/likeTask', (req, res) => {
                     return;
                 }
                 console.log(`Likes incremented for task with ID ${taskId}`);
-                res.status(200).json(task); // Return updated task object
+                res.status(200).json(task); 
             });
         } catch (parseError) {
             console.error(parseError);
@@ -129,7 +172,27 @@ app.post('/likeTask', (req, res) => {
     });
 });
 
-// Increment dislikes for a specific task
+app.get('/access', (req, res) => {
+    fs.readFile(path.join(__dirname, 'settings.json'), (err, data) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error reading settings file');
+            return;
+        }
+        try {
+            const settings = JSON.parse(data);
+            if (settings[0].access === "True") {
+                res.send('True');
+            } else {
+                res.send('Access denied');
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error parsing settings file');
+        }
+    });
+});
+
 app.post('/dislikeTask', (req, res) => {
     const taskId = req.body.taskId;
 
@@ -157,7 +220,7 @@ app.post('/dislikeTask', (req, res) => {
                     return;
                 }
                 console.log(`Dislikes incremented for task with ID ${taskId}`);
-                res.status(200).json(task); // Return updated task object
+                res.status(200).json(task); 
             });
         } catch (parseError) {
             console.error(parseError);
@@ -166,7 +229,6 @@ app.post('/dislikeTask', (req, res) => {
     });
 });
 
-// GET request to fetch all tasks
 app.get('/getTasks', (req, res) => {
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
@@ -185,7 +247,7 @@ app.get('/getTasks', (req, res) => {
 });
 
 app.get('/getTaskById', (req, res) => {
-    const taskId = parseInt(req.query.id); // Assuming id is passed as query parameter
+    const taskId = parseInt(req.query.id); 
 
     fs.readFile('data.json', 'utf8', (err, data) => {
         if (err) {
@@ -210,7 +272,6 @@ app.get('/getTaskById', (req, res) => {
     });
 });
 
-// POST request to add an answer to a task
 app.post('/addAnswer', (req, res) => {
     const { taskId, name, answer } = req.body;
 
@@ -248,7 +309,7 @@ app.post('/addAnswer', (req, res) => {
                     return res.status(500).send('Error saving data');
                 }
                 console.log('Answer added successfully');
-                res.status(200).json(tasks[taskIndex]); // Return updated task object
+                res.status(200).json(tasks[taskIndex]);
             });
         } catch (parseError) {
             console.error('Error parsing data.json:', parseError);
@@ -257,12 +318,8 @@ app.post('/addAnswer', (req, res) => {
     });
 });
 
-
-
-// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });

@@ -1,23 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do List App</title>
-  <link rel="stylesheet" href="./styles/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script>
+        function getQueryParams() {
+            let params = {};
+            window.location.search.substring(1).split("&").forEach(function(part) {
+                let item = part.split("=");
+                params[item[0]] = decodeURIComponent(item[1]);
+            });
+            return params;
+        }
+
+        function saveToLocalStorageAndGreet() {
+            const params = getQueryParams();
+            if (params.user_id && params.username && params.first) {
+                localStorage.setItem('user_id', params.user_id);
+                localStorage.setItem('username', params.username);
+                localStorage.setItem('first', params.first);
+
+                const greeting = document.createElement('p');
+                greeting.textContent = `Здраствуйте, ${params.first}!`;
+                document.getElementById('greeting').appendChild(greeting);
+
+                document.getElementById('status').innerText = '';
+            } else {
+                document.getElementById('status').innerText = 'Required data missing in URL parameters.';
+            }
+        }
+
+        window.onload = saveToLocalStorageAndGreet;
+
+        function checkAccess() {
+            const first = localStorage.getItem('first');
+            fetch(`http://localhost:3000/access?first=${first}`)
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === 'True') {
+                        console.log('Access granted, redirecting...');
+                        window.location.replace('start.html');
+                    } else {
+                        console.log('Access denied or unexpected response');
+                        document.getElementById('status').innerText = 'Доступ пока не выдан. Пожалуйста подождите!';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking access:', error);
+                    document.getElementById('status').innerText = 'Error checking access.';
+                });
+        }
+    </script>
 </head>
 <body>
-    <div class="tasks-container">
-        <!-- Add more task divs as needed -->
+    <h1>Test Web App</h1>
+    <div class="status-message">
+        <p id="greeting"></p>
+        <p id="status">Checking data...</p>
+        <button onclick="checkAccess()">Проверить доступ</button>
     </div>
-    
-    <nav class="bottom-nav">
-        <a href="./page/index.html">Задачи</a>
-        <a href="./page/additionally.html">Дополнительно</a>
-        <a href="./page/add.html">Добавить</a>
-    </nav>
-
-<script src="./scripts/index.js"></script>
-
 </body>
 </html>

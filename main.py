@@ -1,33 +1,138 @@
+import json
+import re
 from aiogram import Bot, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
-
+from aiogram.types import CallbackQuery
 import logging
+import urllib.parse
 
-
-# Token
 token = '7416061984:AAF3wMHZ3D01EIDM2WWjUEvjnR5DDrdL90U'
 bot = Bot(token)
 dp = Dispatcher(bot)
 
-# Logging
 logging.basicConfig(level=logging.INFO)
+
+def update_settings():
+    with open('settings.json', 'r') as file:
+        settings = json.load(file)
+    settings[0]["access"] = "True"
+    with open('settings.json', 'w') as file:
+        json.dump(settings, file, indent=4)
+
+async def broadcast_message(message):
+    try:
+        with open('user_ids.json', 'r') as file:
+            user_ids = json.load(file)
+    except FileNotFoundError:
+        user_ids = []
+
+    for user_id in user_ids:
+        await bot.send_message(user_id, message)
+
+def update_user_ids(message):
+    try:
+        with open('user_ids.json', 'r') as file:
+            user_ids = json.load(file)
+    except FileNotFoundError:
+        user_ids = []
+
+    user_id = message.from_user.id
+    if user_id not in user_ids:
+        user_ids.append(user_id)
+
+    with open('user_ids.json', 'w') as file:
+        json.dump(user_ids, file, indent=4)
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
+    update_user_ids(message)
+    user_data = {
+        "user_id": message.from_user.id,
+        "username": message.from_user.username,
+        "first": message.from_user.first_name
+    }
+    encoded_data = urllib.parse.urlencode(user_data)
+    web_app_url = f'https://test.yadro.space/?{encoded_data}'
 
     markup_inline = InlineKeyboardMarkup()
-    item1 = InlineKeyboardButton("Launch Test", web_app=WebAppInfo(url='https://test.yadro.space/'))
+    item1 = InlineKeyboardButton("Launch Test", web_app=WebAppInfo(url=web_app_url))
+    if message.from_user.id == 1488037388:
+        item2 = InlineKeyboardButton("Открыть доступ", callback_data='change_settings')
+        item3 = InlineKeyboardButton("Рассылка", callback_data='send')
+        markup_inline.add(item2, item3)
     markup_inline.add(item1)
+
     await bot.send_message(
         message.from_user.id,
-        (
-            f"Hey @{message.from_user.username}!"
-        ),
+        f"Hey @{message.from_user.username}!",
         reply_markup=markup_inline,
         parse_mode='HTML'
     )
+
+@dp.callback_query_handler(lambda c: c.data == 'change_settings')
+async def process_callback_change_settings(callback_query: CallbackQuery):
+    update_settings()
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, "Settings updated successfully!")
+
+async def send_messages_to_users():
+    with open('user_ids.json', 'r') as f:
+        user_ids = json.load(f)
+    for user_id in user_ids:
+        try:
+            await bot.send_message(user_id, "Ваше сообщение здесь")
+            print(f"Сообщение отправлено пользователю с ID {user_id}")
+        except Exception as e:
+            print(f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
+
+@dp.callback_query_handler(lambda c: c.data == 'send')
+async def process_callback_change_settings(callback_query: CallbackQuery):
+
+    await send_messages_to_users()
+
+import re
+
+@dp.callback_query_handler(lambda c: c.data == 'confirm')
+async def process_callback_confirm(callback_query: types.CallbackQuery):
+    text = callback_query.message.caption
+
+    id_match = re.search(r'ID: (\d+)', text)
+
+    if id_match:
+        task_id = int(id_match.group(1))  
+        try:
+            with open('data.json', 'r', encoding='utf-8') as file:
+                tasks = json.load(file)
+
+            task_found = False
+            for task in tasks:
+                if task['id'] == task_id:
+                    task['status'] = 'done'
+                    task_found = True
+                    break
+
+            if task_found:
+                with open('data.json', 'w', encoding='utf-8') as file:
+                    json.dump(tasks, file, ensure_ascii=False, indent=2)
+
+                await bot.send_message(callback_query.message.chat.id, f"ID {task_id};\n\nЗадание зарегистрировано как выполненное!")
+            else:
+                await bot.send_message(callback_query.message.chat.id, f"ID {task_id};\n\nЗадача не найдена.")
+        except FileNotFoundError:
+            await bot.send_message(callback_query.message.chat.id, "Файл данных не найден.")
+        except json.JSONDecodeError:
+            await bot.send_message(callback_query.message.chat.id, "Ошибка чтения данных.")
+    else:
+        await bot.send_message(callback_query.message.chat.id, "ID не найден в сообщении.")
+
+
+@dp.callback_query_handler(lambda c: c.data == 'reject')
+async def process_callback_reject(callback_query: CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, "Изменения отклонены.")
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

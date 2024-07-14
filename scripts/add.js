@@ -1,4 +1,4 @@
-const serverUrl = 'https://test.api.yadro.space';
+const serverUrl = 'http://localhost:3000';
 
 document.addEventListener('DOMContentLoaded', () => {
     const taskForm = document.getElementById('task-form');
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => {
             if (response.ok) {
                 console.log('Task added successfully');
-                window.location.href = '../index.html'; // Redirect to tasks list page
+                window.location.href = '../index.html';
             } else {
                 console.error('Failed to add task');
             }

@@ -1,19 +1,17 @@
-const serverUrl = 'https://test.api.yadro.space';
+const serverUrl = 'http://localhost:3000';
 
 fetch(`${serverUrl}/getTasks`)
     .then(response => response.json())
     .then(tasks => {
         const tasksContainer = document.querySelector('.tasks-container');
 
-        // Фильтрация задач: показываем только не срочные (urgent !== true)
-        const nonUrgentTasks = tasks.filter(task => !task.urgent);
+        const activeTasks = tasks.filter(task => task.status !== 'inactive');
 
-        nonUrgentTasks.forEach(task => {
+        activeTasks.forEach(task => {
             const taskDiv = document.createElement('div');
             taskDiv.classList.add('task');
-            taskDiv.setAttribute('id', `task-${task.id}`); // Assuming each task has an ID
-
-            // Добавляем обработчик клика для перехода на task.html с передачей id задачи
+            taskDiv.setAttribute('id', `task-${task.id}`); 
+            
             taskDiv.addEventListener('click', () => {
                 window.location.href = `../page/task.html?id=${task.id}`;
             });
@@ -41,8 +39,8 @@ fetch(`${serverUrl}/getTasks`)
             `;
 
             likeButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Останавливаем распространение события, чтобы клик не срабатывал на taskDiv
-                incrementLike(task.id); // Function to increment likes (defined below)
+                event.stopPropagation();
+                incrementLike(task.id); 
             });
 
             const dislikeButton = document.createElement('button');
@@ -53,8 +51,8 @@ fetch(`${serverUrl}/getTasks`)
             `;
 
             dislikeButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Останавливаем распространение события, чтобы клик не срабатывал на taskDiv
-                incrementDislike(task.id); // Function to increment dislikes (defined below)
+                event.stopPropagation(); 
+                incrementDislike(task.id);
             });
 
             likeDislikeContainer.appendChild(likeButton);
@@ -79,7 +77,7 @@ function incrementLike(taskId) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ taskId }), // Send taskId in the body
+        body: JSON.stringify({ taskId }), 
     })
     .then(response => response.json())
     .then(updatedTask => {
@@ -97,7 +95,7 @@ function incrementDislike(taskId) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ taskId }), // Send taskId in the body
+        body: JSON.stringify({ taskId }), 
     })
     .then(response => response.json())
     .then(updatedTask => {

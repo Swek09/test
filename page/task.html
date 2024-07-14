@@ -9,122 +9,144 @@
 <body>
 
   <nav class="bottom-nav">
-    <a href="../index.html">Задачи</a>
+    <a href="../start.html">Задачи</a>
     <a href="./additionally.html">Дополнительно</a>
     <a href="./add.html">Добавить</a>
   </nav>
 
   <div class="task-details-container">
-    <!-- Здесь будет выводиться информация о задаче -->
   </div>
 
   <div class="answer-form-container">
     <form id="answerForm">
+      <div class="anon-send">
+        <input  type="checkbox" id="anonymousCheckbox">
+        <label for="anonymousCheckbox">Ответить анонимно</label>
+      </div>
       <input type="text" id="nameInput" placeholder="Ваше имя" required>
+      
       <textarea id="answerInput" placeholder="Ответ (до 150 символов)" maxlength="150" required></textarea>
       <button type="submit">Отправить ответ</button>
     </form>
   </div>
+  
 
   <script>
-    const serverUrl = 'https://test.api.yadro.space';
+    const serverUrl = 'http://localhost:3000';
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get('id');
 
-    // Функция для загрузки и отображения информации о задаче, включая ответы
-// Функция для загрузки и отображения информации о задаче, включая ответы
-function loadTaskDetails(taskId) {
-    fetch(`${serverUrl}/getTaskById?id=${taskId}`)
+    function loadTaskDetails(taskId) {
+      fetch(`${serverUrl}/getTaskById?id=${taskId}`)
         .then(response => response.json())
         .then(task => {
-            const taskDetailsContainer = document.querySelector('.task-details-container');
-            taskDetailsContainer.innerHTML = ''; // Очищаем контейнер перед добавлением новых данных
+          const taskDetailsContainer = document.querySelector('.task-details-container');
+          taskDetailsContainer.innerHTML = '';
 
-            const taskImage = document.createElement('img');
-            taskImage.src = task.imageUrl;
-            taskImage.alt = 'фото задачи';
-            taskImage.classList.add('task-image');
+          const taskImage = document.createElement('img');
+          taskImage.src = task.imageUrl;
+          taskImage.alt = 'фото задачи';
+          taskImage.classList.add('task-image');
 
-            const taskTitle = document.createElement('h2');
-            taskTitle.classList.add('task-title');
-            taskTitle.textContent = task.title;
+          const taskTitle = document.createElement('h2');
+          taskTitle.classList.add('task-title');
+          taskTitle.textContent = task.title;
 
-            const taskDescription = document.createElement('p');
-            taskDescription.classList.add('task-description');
-            taskDescription.textContent = task.description;
+          const taskDescription = document.createElement('p');
+          taskDescription.classList.add('task-description');
+          taskDescription.textContent = task.description;
 
-            const answersContainer = document.createElement('div');
-            answersContainer.classList.add('answers-container');
+          const answersContainer = document.createElement('div');
+          answersContainer.classList.add('answers-container');
 
-            if (task.answers && task.answers.length > 0) {
-                task.answers.forEach(answer => {
-                    const answerDiv = document.createElement('div');
-                    answerDiv.classList.add('answer');
+          if (task.answers && task.answers.length > 0) {
+            task.answers.forEach(answer => {
+              const answerDiv = document.createElement('div');
+              answerDiv.classList.add('answer');
 
-                    const answerName = document.createElement('p');
-                    answerName.classList.add('answer-name');
-                    answerName.textContent = answer.name;
+              const answerName = document.createElement('p');
+              answerName.classList.add('answer-name');
+              answerName.textContent = answer.name;
 
-                    const answerText = document.createElement('p');
-                    answerText.classList.add('answer-text');
-                    answerText.textContent = answer.answer;
+              const answerText = document.createElement('p');
+              answerText.classList.add('answer-text');
+              answerText.textContent = answer.answer;
 
-                    const answerTimestamp = document.createElement('p');
-                    answerTimestamp.classList.add('answer-timestamp');
-                    answerTimestamp.textContent = new Date(answer.timestamp).toLocaleString();
+              const answerTimestamp = document.createElement('p');
+              answerTimestamp.classList.add('answer-timestamp');
+              answerTimestamp.textContent = new Date(answer.timestamp).toLocaleString();
 
-                    answerDiv.appendChild(answerName);
-                    answerDiv.appendChild(answerText);
-                    answerDiv.appendChild(answerTimestamp);
+              answerDiv.appendChild(answerName);
+              answerDiv.appendChild(answerText);
+              answerDiv.appendChild(answerTimestamp);
 
-                    answersContainer.appendChild(answerDiv);
-                });
-            }
-
-            const likeDislikeContainer = document.createElement('div');
-            likeDislikeContainer.classList.add('like-dislike-container');
-
-            const likeButton = document.createElement('button');
-            likeButton.classList.add('like-button');
-            likeButton.innerHTML = `
-                <img src="../img/thumb-up.png" alt="Лайк">
-                <span class="like-count">${task.likes}</span>
-            `;
-
-            likeButton.addEventListener('click', () => {
-                incrementLike(task.id);
+              answersContainer.appendChild(answerDiv);
             });
+          }
 
-            const dislikeButton = document.createElement('button');
-            dislikeButton.classList.add('dislike-button');
-            dislikeButton.innerHTML = `
-                <img src="../img/thumb-down.png" alt="Дизлайк">
-                <span class="dislike-count">${task.dislikes}</span>
-            `;
+          const likeDislikeContainer = document.createElement('div');
+          likeDislikeContainer.classList.add('like-dislike-container');
 
-            dislikeButton.addEventListener('click', () => {
-                incrementDislike(task.id);
-            });
+          const likeButton = document.createElement('button');
+          likeButton.classList.add('like-button');
+          likeButton.innerHTML = `
+              <img src="../img/thumb-up.png" alt="Лайк">
+              <span class="like-count">${task.likes}</span>
+          `;
 
-            likeDislikeContainer.appendChild(likeButton);
-            likeDislikeContainer.appendChild(dislikeButton);
+          likeButton.addEventListener('click', () => {
+            incrementLike(task.id);
+          });
 
-            taskDetailsContainer.appendChild(taskImage);
-            taskDetailsContainer.appendChild(taskTitle);
-            taskDetailsContainer.appendChild(taskDescription);
-            taskDetailsContainer.appendChild(answersContainer); // Добавляем контейнер с ответами перед блоком кнопок
-            taskDetailsContainer.appendChild(likeDislikeContainer);
+          const dislikeButton = document.createElement('button');
+          dislikeButton.classList.add('dislike-button');
+          dislikeButton.innerHTML = `
+              <img src="../img/thumb-down.png" alt="Дизлайк">
+              <span class="dislike-count">${task.dislikes}</span>
+          `;
+
+          dislikeButton.addEventListener('click', () => {
+            incrementDislike(task.id);
+          });
+
+          likeDislikeContainer.appendChild(likeButton);
+          likeDislikeContainer.appendChild(dislikeButton);
+
+          taskDetailsContainer.appendChild(taskImage);
+          taskDetailsContainer.appendChild(taskTitle);
+          taskDetailsContainer.appendChild(taskDescription);
+          taskDetailsContainer.appendChild(answersContainer);
+          taskDetailsContainer.appendChild(likeDislikeContainer);
         })
         .catch(error => {
-            console.error('Error fetching task details:', error);
+          console.error('Error fetching task details:', error);
         });
-}
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       loadTaskDetails(taskId);
 
       const answerForm = document.getElementById('answerForm');
       answerForm.addEventListener('submit', submitAnswer);
+
+      const nameInput = document.getElementById('nameInput');
+      const anonymousCheckbox = document.getElementById('anonymousCheckbox');
+
+      const storedName = localStorage.getItem('first');
+      if (storedName) {
+        nameInput.value = storedName;
+      }
+
+      anonymousCheckbox.addEventListener('change', () => {
+        if (anonymousCheckbox.checked) {
+          nameInput.value = 'Анонимно';
+          nameInput.disabled = true;
+        } else {
+          const storedName = localStorage.getItem('first');
+          nameInput.value = storedName || '';
+          nameInput.disabled = false;
+        }
+      });
     });
 
     function submitAnswer(event) {
@@ -158,9 +180,7 @@ function loadTaskDetails(taskId) {
         .then(response => response.json())
         .then(response => {
           alert('Ответ успешно добавлен.');
-          // Optionally, you can update the UI to show the new answer immediately
-          // For simplicity, let's reload the page to refresh the answers
-          location.reload();
+          location.reload(); 
         })
         .catch(error => {
           console.error('Error adding answer:', error);
