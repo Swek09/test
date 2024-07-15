@@ -58,7 +58,7 @@ async def process_start_command(message: types.Message):
 
     markup_inline = InlineKeyboardMarkup()
     item1 = InlineKeyboardButton("Launch Test", web_app=WebAppInfo(url=web_app_url))
-    if message.from_user.id == 1488037388:
+    if message.from_user.id == 304301801:
         item2 = InlineKeyboardButton("Открыть доступ", callback_data='change_settings')
         item3 = InlineKeyboardButton("Рассылка", callback_data='send')
         markup_inline.add(item2, item3)

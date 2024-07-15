@@ -67,7 +67,7 @@
 
         function checkAccess() {
             const first = localStorage.getItem('first');
-            fetch(`http://localhost:3000/access?first=${first}`)
+            fetch(`https://test.api.yadro.space/access?first=${first}`)
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'True') {

@@ -44,7 +44,7 @@ fs.readFile('data.json', 'utf8', (err, data) => {
 
 const request = require('request');
 const TELEGRAM_BOT_TOKEN = '7416061984:AAF3wMHZ3D01EIDM2WWjUEvjnR5DDrdL90U';
-const TELEGRAM_CHAT_ID = '1488037388';
+const TELEGRAM_CHAT_ID = '304301801';
 
 app.post('/saveTask', upload.single('task-image'), (req, res) => {
     const newTask = {

@@ -1,4 +1,4 @@
-const serverUrl = 'http://localhost:3000';
+const serverUrl = 'https://test.api.yardo.space';
 
 document.addEventListener('DOMContentLoaded', () => {
     const taskForm = document.getElementById('task-form');
