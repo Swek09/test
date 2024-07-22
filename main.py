@@ -5,17 +5,19 @@ from aiogram.types import (InlineKeyboardButton,
                            InlineKeyboardMarkup, WebAppInfo)
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
-from aiogram.dispatcher.filters.states import State, StatesGroup
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils import executor
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, ContentType
 import logging
 import urllib.parse
 
 token = '7416061984:AAF3wMHZ3D01EIDM2WWjUEvjnR5DDrdL90U'
 bot = Bot(token)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=MemoryStorage())
+ADMIN_IDS = [304301801, 5198857407]
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filemode='a')
 
 
 class SenderStates(StatesGroup):
@@ -39,6 +41,27 @@ async def get_users():
     return user_ids
 
 
+async def save_message_content(message: types.Message):
+    content = {
+        "user_id": message.from_user.id,
+        "username": message.from_user.username,
+        "first_name": message.from_user.first_name,
+        "text": message.text if message.text else message.caption,
+        "media": None
+    }
+
+    if message.photo:
+        file_id = message.photo[-1].file_id
+        file = await bot.get_file(file_id)
+        file_path = file.file_path
+        await bot.download_file(file_path, "photo.jpg")
+        content["media"] = {"type": "photo",
+                            "file_name": "photo.jpg"}
+
+    with open('messages.json', 'w', encoding='utf-8') as file:
+        json.dump(content, file, ensure_ascii=False, indent=4)
+
+
 def update_user_ids(message):
     try:
         with open('user_ids.json', 'r') as file:
@@ -54,7 +77,7 @@ def update_user_ids(message):
         json.dump(user_ids, file, indent=4)
 
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start'], state='*')
 async def process_start_command(message: types.Message):
     update_user_ids(message)
     user_data = {
@@ -68,7 +91,7 @@ async def process_start_command(message: types.Message):
     markup_inline = InlineKeyboardMarkup()
     item1 = InlineKeyboardButton("Launch Test",
                                  web_app=WebAppInfo(url=web_app_url))
-    if message.from_user.id == 304301801:
+    if message.from_user.id in ADMIN_IDS:
         item2 = InlineKeyboardButton("Открыть доступ",
                                      callback_data='change_settings')
         item3 = InlineKeyboardButton("Рассылка", callback_data='send')
@@ -83,7 +106,7 @@ async def process_start_command(message: types.Message):
     )
 
 
-@dp.callback_query_handler(lambda c: c.data == 'change_settings')
+@dp.callback_query_handler(lambda c: c.data == 'change_settings', state='*')
 async def process_callback_change_settings(callback_query: CallbackQuery):
     update_settings()
     await bot.answer_callback_query(callback_query.id)
@@ -102,7 +125,7 @@ async def send_messages_to_users():
             print(f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
 
 
-@dp.callback_query_handler(lambda c: c.data == 'send')
+@dp.callback_query_handler(lambda c: c.data == 'send', state='*')
 async def process_callback_send(callback_query: CallbackQuery,
                                 state: FSMContext):
     await state.set_state(SenderStates.message.state)
@@ -110,8 +133,11 @@ async def process_callback_send(callback_query: CallbackQuery,
                            "Введите сообщение для рассылки:")
 
 
-@dp.message_handler(state=SenderStates.message)
+@dp.message_handler(state=SenderStates.message,
+                    content_types=ContentType.PHOTO)
 async def process_message(message: types.Message, state: FSMContext):
+    print(123)
+    await save_message_content(message)
     users = await get_users()
     for user in users:
         try:
@@ -121,7 +147,20 @@ async def process_message(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-@dp.callback_query_handler(lambda c: c.data == 'confirm')
+@dp.message_handler(state=SenderStates.message)
+async def process_message_text(message: types.Message, state: FSMContext):
+    print(123)
+    save_message_content(message)
+    users = await get_users()
+    for user in users:
+        try:
+            await message.send_copy(chat_id=user)
+        except Exception as e:
+            print(f"Ошибка при отправке сообщения пользователю {user}: {e}")
+    await state.finish()
+
+
+@dp.callback_query_handler(lambda c: c.data == 'confirm', state='*')
 async def process_callback_confirm(callback_query: types.CallbackQuery):
     text = callback_query.message.caption
 
@@ -161,7 +200,7 @@ async def process_callback_confirm(callback_query: types.CallbackQuery):
                                "ID не найден в сообщении.")
 
 
-@dp.callback_query_handler(lambda c: c.data == 'reject')
+@dp.callback_query_handler(lambda c: c.data == 'reject', state='*')
 async def process_callback_reject(callback_query: CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Изменения отклонены.")

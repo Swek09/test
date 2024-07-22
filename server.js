@@ -272,6 +272,22 @@ app.get('/getTaskById', (req, res) => {
     });
 });
 
+app.get('/getMessage', (req, res) => {
+    fs.readFile('messages.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading messages.json:', err);
+            return res.status(500).send('Error reading message');
+        }
+        try {
+            const message = JSON.parse(data);
+            res.status(200).json(message);
+        } catch (parseError) {
+            console.error('Error parsing messages.json:', parseError);
+            res.status(500).send('Error parsing message');
+        }
+    });
+});
+
 app.post('/addAnswer', (req, res) => {
     const { taskId, name, answer } = req.body;
 
