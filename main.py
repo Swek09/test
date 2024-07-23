@@ -136,12 +136,22 @@ async def process_callback_send(callback_query: CallbackQuery,
 @dp.message_handler(state=SenderStates.message,
                     content_types=ContentType.PHOTO)
 async def process_message(message: types.Message, state: FSMContext):
-    print(123)
     await save_message_content(message)
     users = await get_users()
+    markup = InlineKeyboardMarkup()
     for user in users:
+        user_data = {
+            "user_id": user,
+            "username": user,
+            "first": user
+        }
+        encoded_data = urllib.parse.urlencode(user_data)
+        web_app_url = f'https://test.yadro.space/?{encoded_data}'
+        item1 = InlineKeyboardButton("Launch Test",
+                                     web_app=WebAppInfo(url=web_app_url))
+        markup.add(item1)
         try:
-            await message.send_copy(chat_id=user)
+            await message.send_copy(chat_id=user, reply_markup=markup)
         except Exception as e:
             print(f"Ошибка при отправке сообщения пользователю {user}: {e}")
     await state.finish()
