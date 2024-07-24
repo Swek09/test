@@ -81,7 +81,7 @@
         };
 
         function fetchMessage() {
-            fetch('http://localhost:3000/getMessage')
+            fetch('https://test.api.yadro.space/getMessage')
                 .then(response => response.json())
                 .then(message => {
                     displayMessage(message);
@@ -108,7 +108,7 @@
 
         function checkAccess() {
             const first = localStorage.getItem('first');
-            fetch(`http://localhost:3000/access?first=имя&user_id=2&username=fer`)
+            fetch(`https://test.api.yadro.space/access?first=имя&user_id=2&username=fer`)
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'True') {
