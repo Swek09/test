@@ -14,13 +14,17 @@
         h1 {
             color: #333;
         }
-        .status-message {
+        .status-message, .message-content {
             margin-top: 20px;
             padding: 10px;
             background-color: #fff;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .message-content img {
+            max-width: 100%;
+            height: auto;
         }
         button {
             background-color: #4CAF50;
@@ -34,6 +38,14 @@
         }
         button:hover {
             background-color: #45a049;
+        }
+        .close-button {
+            background-color: #f44336;
+            color: white;
+            margin-top: 10px;
+        }
+        .close-button:hover {
+            background-color: #e53935;
         }
     </style>
     <script>
@@ -63,11 +75,40 @@
             }
         }
 
-        window.onload = saveToLocalStorageAndGreet;
+        window.onload = function() {
+            saveToLocalStorageAndGreet();
+            fetchMessage();
+        };
+
+        function fetchMessage() {
+            fetch('https://test.api.yadro.space/getMessage')
+                .then(response => response.json())
+                .then(message => {
+                    displayMessage(message);
+                })
+                .catch(error => {
+                    console.error('Error fetching message:', error);
+                    document.getElementById('message-content').innerText = 'Error fetching message.';
+                });
+        }
+
+        function displayMessage(message) {
+            const messageContent = document.getElementById('message-content');
+            messageContent.innerHTML = `
+                <p>${message.text}</p>
+                ${message.media ? `<img src="photo.jpg">` : ''}
+                <button class="close-button" onclick="closeMessage()">Закрыть</button>
+            `;
+        }
+
+        function closeMessage() {
+            const messageContent = document.getElementById('message-content');
+            messageContent.style.display = 'none';
+        }
 
         function checkAccess() {
             const first = localStorage.getItem('first');
-            fetch(`https://test.api.yadro.space/access?first=${first}`)
+            fetch(`https://test.api.yadro.space/access?first=имя&user_id=2&username=fer`)
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'True') {
@@ -76,7 +117,7 @@
                     } else {
                         console.log('Access denied or unexpected response');
                         document.getElementById('status').innerText = 'Доступ пока не выдан. Пожалуйста подождите!';
-                    }
+                    }   
                 })
                 .catch(error => {
                     console.error('Error checking access:', error);
@@ -92,5 +133,6 @@
         <p id="status">Checking data...</p>
         <button onclick="checkAccess()">Проверить доступ</button>
     </div>
+    <div id="message-content" class="message-content"></div>
 </body>
 </html>

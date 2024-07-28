@@ -28,7 +28,7 @@ def aggregate_likes_dislikes(data):
 
     return total_likes, total_dislikes, post_count
 
-bot_token = '7416061984:AAF3wMHZ3D01EIDM2WWjUEvjnR5DDrdL90U'
+bot_token = '7055788450:AAHPBWxXC4tBNsRg53WOlLGGofmukjSU4PM'
 admin_chat_id = 1488037388
 
 schedule_time = "22:29"
